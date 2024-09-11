@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menahem et la traversée</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Traversée du fleuve avec Menahem</h1>
+    
+    <div class="game-container">
+        <div id="rive-initiale" class="rive">
+            <h2>Rive Initiale</h2>
+            <ul id="initial-list">
+                <li id="menahem" class="item">Menahem</li>
+                <li id="loup" class="item">Loup</li>
+                <li id="agneau" class="item">Agneau</li>
+                <li id="chou" class="item">Chou</li>
+            </ul>
+        </div>
+        
+        <div class="barque">
+            <button id="traverse">Traverser</button>
+            <div id="barque-content" class="barque-content">
+                <!-- Contenu de la barque -->
+            </div>
+        </div>
+        
+        <div id="rive-opposée" class="rive">
+            <h2>Rive Opposée</h2>
+            <ul id="opposée-list">
+                <!-- Liste des éléments sur la rive opposée -->
+            </ul>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #4CAF50;
+}
+
+.game-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 50px;
+}
+
+.rive {
+    border: 2px solid #000;
+    padding: 20px;
+    width: 30%;
+}
+
+.item {
+    padding: 10px;
+    margin: 5px;
+    background-color: #f2f2f2;
+    cursor: pointer;
+    list-style: none;
+    border: 1px solid #ddd;
+}
+
+.barque {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#barque-content {
+    min-height: 50px;
+    min-width: 50px;
+    border: 2px solid #000;
+    margin: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#message {
+    margin-top: 20px;
+    font-weight: bold;
+}
+let riveInitiale = ["menahem", "loup", "agneau", "chou"];
+let riveOpposée = [];
+let barque = [];
+
+const initialList = document.getElementById("initial-list");
+const opposéeList = document.getElementById("opposée-list");
+const barqueContent = document.getElementById("barque-content");
+const message = document.getElementById("message");
+
+function updateUI() {
+    // Mettre à jour la rive initiale
+    initialList.innerHTML = '';
+    riveInitiale.forEach(item => {
+        const li = document.createElement("li");
+        li.id = item;
+        li.className = "item";
+        li.textContent = capitalize(item);
+        li.onclick = () => déplacerVersBarque(item);
+        initialList.appendChild(li);
+    });
+
+    // Mettre à jour la rive opposée
+    opposéeList.innerHTML = '';
+    riveOpposée.forEach(item => {
+        const li = document.createElement("li");
+        li.id = item;
+        li.className = "item";
+        li.textContent = capitalize(item);
+        li.onclick = () => déplacerVersBarque(item);
+        opposéeList.appendChild(li);
+    });
+
+    // Mettre à jour la barque
+    barqueContent.innerHTML = '';
+    barque.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.textContent = capitalize(item);
+        barqueContent.appendChild(li);
+    });
+}
+
+function déplacerVersBarque(item) {
+    if (barque.length < 2) {
+        if (riveInitiale.includes(item)) {
+            riveInitiale = riveInitiale.filter(i => i !== item);
+        } else if (riveOpposée.includes(item)) {
+            riveOpposée = riveOpposée.filter(i => i !== item);
+        }
+        barque.push(item);
+        updateUI();
+    } else {
+        message.textContent = "La barque est pleine !";
+    }
+}
+
+function traverser() {
+    if (!barque.includes("menahem")) {
+        message.textContent = "Menahem doit être dans la barque pour traverser.";
+        return;
+    }
+    if (riveInitiale.includes("menahem")) {
+        barque.forEach(item => {
+            riveOpposée.push(item);
+        });
+        riveInitiale = riveInitiale.filter(item => !barque.includes(item));
+    } else {
+        barque.forEach(item => {
+            riveInitiale.push(item);
+        });
+        riveOpposée = riveOpposée.filter(item => !barque.includes(item));
+    }
+    barque = [];
+    message.textContent = "";
+    updateUI();
+    vérifierSécurité();
+}
+
+function vérifierSécurité() {
+    if (riveInitiale.includes("loup") && riveInitiale.includes("agneau") && !riveInitiale.includes("menahem")) {
+        message.textContent = "Le loup a mangé l'agneau ! Game Over.";
+    } else if (riveInitiale.includes("agneau") && riveInitiale.includes("chou") && !riveInitiale.includes("menahem")) {
+        message.textContent = "L'agneau a mangé le chou ! Game Over.";
+    } else if (riveOpposée.includes("loup") && riveOpposée.includes("agneau") && !riveOpposée.includes("menahem")) {
+        message.textContent = "Le loup a mangé l'agneau ! Game Over.";
+    } else if (riveOpposée.includes("agneau") && riveOpposée.includes("chou") && !riveOpposée.includes("menahem")) {
+        message.textContent = "L'agneau a mangé le chou ! Game Over.";
+    }
+}
+
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+document.getElementById("traverse").onclick = traverser;
+
+updateUI();
